@@ -43,7 +43,7 @@ Created by: Tamim Dostyar
 
 ## Project Structure
 ```
-DS-Club/
+UploadFile-DSClub/
 ├── fileupload/          # Project settings
 ├── upload/             # Main application
 │   ├── templates/     # HTML templates
