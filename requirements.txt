@@ -1,0 +1,6 @@
+Django==5.0.2
+tensorflow==2.15.0
+numpy==1.24.3
+Pillow==10.2.0
+django-crispy-forms==2.1
+crispy-bootstrap5==2024.2

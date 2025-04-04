@@ -1,0 +1,887 @@
+<!-- Creator: Tamim Dostyar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Shark</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://e7.pngegg.com/pngimages/61/270/png-clipart-cute-shark-shark-animal-thumbnail.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @keyframes swim {
+            0% {
+                transform: translateX(-100%) rotateY(180deg);
+            }
+            100% {
+                transform: translateX(100%) rotateY(180deg);
+            }
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(0) translateZ(0) scaleY(1); }
+            50% { transform: translateX(-25%) translateZ(0) scaleY(0.8); }
+            100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+        }
+
+        body {
+            background: linear-gradient(0deg, #000428, #004e92);
+            min-height: 100vh;
+            padding: 2rem 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center;
+            background-size: cover;
+            opacity: 0.3;
+            z-index: -2;
+        }
+
+        .shark {
+            position: fixed;
+            bottom: 10%;
+            left: -200px;
+            width: 200px;
+            height: auto;
+            animation: swim 20s linear infinite;
+            z-index: -1;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .waves {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230099ff" fill-opacity="0.2" d="M0,32L48,37.3C96,43,192,53,288,80C384,107,480,149,576,154.7C672,160,768,128,864,112C960,96,1056,96,1152,106.7C1248,117,1344,139,1392,149.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x;
+            background-size: 1440px 100px;
+            animation: wave 7s linear infinite;
+            z-index: -1;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
+        }
+
+        .team-title {
+            color: white;
+            font-size: 3rem;
+            text-shadow: 0 0 20px rgba(0, 157, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .upload-info {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .file-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 157, 255, 0.3);
+        }
+
+        .btn-upload {
+            background: rgba(0, 157, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-upload:hover {
+            background: rgba(0, 157, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: rgba(220, 53, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            margin-left: 0.5rem;
+        }
+
+        .btn-delete:hover {
+            background: rgba(220, 53, 69, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(0, 157, 255, 0.5);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 157, 255, 0.3);
+        }
+
+        .text-ocean {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .alert {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: white;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            width: 300px;
+            max-width: 90%;
+        }
+
+        .text-container {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            width: 100px;
+            height: 100px;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .processing-message {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
+            width: 100%;
+        }
+
+        .hello-world-message {
+            font-size: 2rem;
+            color: #00ff9d;
+            text-shadow: 0 0 15px rgba(0, 255, 157, 0.7);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            width: 100%;
+        }
+
+        .hello-world-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .processing-details {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease 0.3s;
+            width: 100%;
+        }
+
+        .processing-details.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .prediction-badge {
+            background: rgba(0, 157, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .confidence-badge {
+            background: rgba(40, 167, 69, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        .location-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .profile-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .profile-button:hover {
+            transform: scale(1.1);
+            border-color: rgba(0, 157, 255, 0.5);
+        }
+
+        .profile-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-button i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .profile-dropdown {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            z-index: 1000;
+            display: none;
+            min-width: 200px;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown a,
+        .profile-dropdown button {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .profile-dropdown a:hover,
+        .profile-dropdown button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-dropdown .dropdown-header {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-dropdown .dropdown-header p {
+            margin: 0;
+            color: white;
+        }
+
+        .profile-dropdown .dropdown-header p:last-child {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .map-controls button {
+            background: rgba(0, 157, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .map-controls button:hover {
+            background: rgba(0, 157, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .coordinates-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .coordinates-display p {
+            margin: 0;
+        }
+
+        /* Footer Styles */
+        footer {
+            position: relative;
+            z-index: 1;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 32, 63, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        footer p {
+            text-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        footer i {
+            color: rgba(0, 157, 255, 0.8);
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="text-container">
+                <div class="processing-message">Processing your image...</div>
+                <div class="hello-world-message"></div>
+                <div class="processing-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <img src="https://www.pngall.com/wp-content/uploads/2016/04/Shark-PNG-Picture.png" alt="Shark" class="shark">
+    <div class="waves"></div>
+    
+    <div class="profile-button" onclick="toggleProfileDropdown()">
+        {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="Profile">
+        {% else %}
+        <i class="fas fa-user"></i>
+        {% endif %}
+    </div>
+
+    <div class="profile-dropdown" id="profileDropdown">
+        <div class="dropdown-header">
+            <p>{{ user.username }}</p>
+            <p>{{ user.email }}</p>
+        </div>
+        <a href="{% url 'profile' %}">
+            <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="{% url 'logout' %}" class="dropdown-item" style="background: none; border: none; width: 100%; text-align: left; color: white; padding: 0.5rem 1rem; cursor: pointer;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center team-title">Team Shark</h1>
+                
+                <div class="glass-container text-center">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h2 class="mb-4 text-ocean">Upload Image for ML Processing</h2>
+                    <p class="upload-info">Upload your image and provide location data for ML processing</p>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="glass-container mb-4">
+                                    <h4 class="text-ocean mb-3">
+                                        <i class="fas fa-image me-2"></i>Upload Image
+                                    </h4>
+                                    <div class="mb-3">
+                                        {{ form.file.label_tag }}
+                                        {{ form.file }}
+                                        {% if form.file.errors %}
+                                        <div class="text-danger">{{ form.file.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="glass-container mb-4">
+                                    <h4 class="text-ocean mb-3">
+                                        <i class="fas fa-map-marker-alt me-2"></i>Select Location
+                                    </h4>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="latitude" class="form-label text-white">Latitude</label>
+                                                <input type="number" step="any" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="longitude" class="form-label text-white">Longitude</label>
+                                                <input type="number" step="any" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="days" class="form-label text-white">Days</label>
+                                                <input type="number" step="1" class="form-control" id="days" name="days" placeholder="1 to 14" min="1" max="14" oninput="validity.valid||(value='');">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="map" class="mb-3"></div>
+                                    <div class="map-controls">
+                                        <button type="button" onclick="getCurrentLocation()" class="btn btn-upload">
+                                            <i class="fas fa-location-arrow me-2"></i>Get My Location
+                                        </button>
+                                        <button type="button" onclick="clearLocation()" class="btn btn-upload">
+                                            <i class="fas fa-times me-2"></i>Clear Location
+                                        </button>
+                                    </div>
+                                    <div class="coordinates-display">
+                                        <p><i class="fas fa-map-marker-alt me-2"></i>Selected Location:</p>
+                                        <p id="locationDisplay">No location selected</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-upload btn-lg px-5">
+                                <i class="fas fa-upload me-2"></i>Upload and Process
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-container">
+                    <h3 class="mb-4 text-ocean">Uploaded Files</h3>
+                    {% if files %}
+                        {% for file in files %}
+                            <div class="file-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-image me-2 text-ocean"></i>
+                                    <strong class="text-ocean">{{ file.file.name }}</strong>
+                                    <br>
+                                    <small class="text-ocean">Uploaded {{ file.uploaded_at|timesince }} ago</small>
+                                    <div class="location-info">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        Location: {{ file.location_name|default:"N/A" }}
+                                    </div>
+                                    <div class="mt-2">
+                                        {% if file.prediction %}
+                                        <span class="prediction-badge">
+                                            <i class="fas fa-robot me-2"></i>Prediction: {{ file.prediction }}
+                                        </span>
+                                        <span class="confidence-badge">
+                                            <i class="fas fa-chart-line me-2"></i>Confidence: {{ file.confidence|floatformat:2 }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-upload btn-sm" onclick="openImageModal('{{ file.file.url }}', '{{ file.prediction|default:"N/A" }}', '{{ file.confidence|floatformat:2|default:"N/A" }}', {{ file.weather_data|default:'null'|safe }})">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                    <form method="post" action="{% url 'delete_file' file.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-delete btn-sm" onclick="return confirm('Are you sure you want to delete this file?')">
+                                            <i class="fas fa-trash-alt me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-ocean">No files uploaded yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5 py-3 text-center">
+        <div class="container">
+            <p class="mb-0 text-ocean" style="font-size: 0.9rem;">
+                <i class="fas fa-fish me-2"></i> Project credit <i class="fas fa-heart mx-1" style="color: #ff6b84;"></i> goes to Tamim Dostyar, Casey, Mateus, Saurya, Minh!
+            </p>
+        </div>
+    </footer>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(0, 32, 63, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="imageModalLabel">Image Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-7 text-center">
+                            <img id="modalImage" src="" alt="Uploaded Image" style="max-width: 100%; max-height: 70vh; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 157, 255, 0.5);">
+                            <div class="mt-3">
+                                <span id="modalPrediction" class="prediction-badge">
+                                    <i class="fas fa-robot me-2"></i>Prediction: N/A
+                                </span>
+                                <span id="modalConfidence" class="confidence-badge">
+                                    <i class="fas fa-chart-line me-2"></i>Confidence: N/A
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="glass-container" style="height: 100%; overflow-y: auto; max-height: 70vh;">
+                                <h5 class="text-ocean mb-3">
+                                    <i class="fas fa-cloud-sun me-2"></i>Weather Forecast
+                                </h5>
+                                <div id="weatherContainer">
+                                    <p class="text-center text-ocean">No weather data available</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-upload" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let marker;
+        let currentLocation = null;
+
+        // Initialize map
+        document.addEventListener('DOMContentLoaded', function() {
+            map = L.map('map').setView([0, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add click event to map
+            map.on('click', function(e) {
+                updateLocation(e.latlng.lat, e.latlng.lng);
+            });
+        });
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        updateLocation(lat, lng);
+                    },
+                    function(error) {
+                        alert('Error getting location: ' + error.message);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser');
+            }
+        }
+
+        function updateLocation(lat, lng) {
+            // Update input fields
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+
+            // Update display
+            document.getElementById('locationDisplay').innerHTML = 
+                `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+
+            // Update map
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 13);
+        }
+
+        function clearLocation() {
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('locationDisplay').innerHTML = 'No location selected';
+        }
+
+        // Add event listeners for manual input
+        document.addEventListener('DOMContentLoaded', function() {
+            const latInput = document.getElementById('latitude');
+            const lngInput = document.getElementById('longitude');
+
+            function updateFromInputs() {
+                const lat = parseFloat(latInput.value);
+                const lng = parseFloat(lngInput.value);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    updateLocation(lat, lng);
+                }
+            }
+
+            latInput.addEventListener('change', updateFromInputs);
+            lngInput.addEventListener('change', updateFromInputs);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            const helloWorldMessage = document.querySelector('.hello-world-message');
+            const processingDetails = document.querySelector('.processing-details');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                loadingOverlay.style.display = 'flex';
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        helloWorldMessage.textContent = data.message;
+                        helloWorldMessage.classList.add('show');
+                        
+                        processingDetails.textContent = `Processed at: ${data.processed_info.processed_at}`;
+                        processingDetails.classList.add('show');
+                        
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 3000);
+                    } else {
+                        // Handle error
+                        helloWorldMessage.textContent = "An error occurred";
+                        helloWorldMessage.style.color = "#ff6b6b";
+                        helloWorldMessage.classList.add('show');
+                        
+                        processingDetails.textContent = data.message || "Unknown error";
+                        processingDetails.classList.add('show');
+                        
+                        setTimeout(() => {
+                            loadingOverlay.style.display = 'none';
+                            alert("Error: " + (data.message || "Unknown error occurred during processing"));
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingOverlay.style.display = 'none';
+                    alert("An error occurred while processing your request. Please try again.");
+                });
+            });
+        });
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Function to open image modal
+        function openImageModal(imageUrl, prediction, confidence, weatherData) {
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('modalPrediction').innerHTML = `<i class="fas fa-robot me-2"></i>Prediction: ${prediction}`;
+            document.getElementById('modalConfidence').innerHTML = `<i class="fas fa-chart-line me-2"></i>Confidence: ${confidence}`;
+            
+            // Update weather forecast section
+            const weatherContainer = document.getElementById('weatherContainer');
+            if (weatherData && weatherData.days) {
+                let weatherHtml = '';
+                
+                // Add location with improved styling
+                if (weatherData.location) {
+                    weatherHtml += `
+                        <div class="location mb-3 p-3" style="background: rgba(0, 157, 255, 0.2); border-radius: 10px; text-align: center;">
+                            <h5 class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>${weatherData.location}</h5>
+                            <small class="text-ocean">
+                                <i class="fas fa-clock me-1"></i>${weatherData.updated || 'Unknown time'}
+                            </small>
+                        </div>
+                    `;
+                }
+                
+                if (weatherData.error) {
+                    weatherHtml += `
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> ${weatherData.error}
+                        </div>
+                    `;
+                }
+                
+                if (!weatherData.days.length) {
+                    weatherHtml += '<p class="text-center text-ocean">No forecast data available</p>';
+                } else {
+                    weatherData.days.forEach(day => {
+                        weatherHtml += `
+                            <div class="weather-day mb-3 p-2" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong class="text-ocean">${day.date}</strong>
+                                    <span class="badge bg-primary">${day.weather}</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="temp-high">
+                                            <i class="fas fa-temperature-high text-danger me-1"></i> ${day.temp_high}°${weatherData.units.temperature === 'fahrenheit' ? 'F' : 'C'}
+                                        </div>
+                                        <div class="temp-low">
+                                            <i class="fas fa-temperature-low text-info me-1"></i> ${day.temp_low}°${weatherData.units.temperature === 'fahrenheit' ? 'F' : 'C'}
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="humidity">
+                                            <i class="fas fa-tint me-1"></i> ${day.humidity || 'N/A'}%
+                                        </div>
+                                        <div class="precipitation">
+                                            <i class="fas fa-cloud-rain me-1"></i> ${day.precipitation ? `${day.precipitation.chance}% (${day.precipitation.amount} ${weatherData.units.precipitation})` : 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                weatherContainer.innerHTML = weatherHtml;
+            } else {
+                // If no weather data is available, show a message with option to get data
+                weatherContainer.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-ocean mb-3">No weather forecast data available for this image.</p>
+                        <p class="text-ocean small mb-4">Weather data is only available for images uploaded with location coordinates.</p>
+                    </div>
+                `;
+            }
+            
+            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            imageModal.show();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const profileButton = document.querySelector('.profile-button');
+            
+            if (!profileButton.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html> 
