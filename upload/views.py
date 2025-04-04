@@ -48,18 +48,19 @@ def delete_file(request, file_id):
 @api_view(['GET'])
 def forecast(request):
     """
-    Get weather forecast based on latitude and longitude using Open-Meteo API,
-    which provides free 16-day forecasts without requiring an API key.
+    Get simplified daily weather forecast with temperature, humidity, and precipitation.
     
     Query parameters:
         lat (float): Latitude
         lon (float): Longitude
         days (int, optional): Number of forecast days (default: 15, max: 16)
+        units (str, optional): Temperature units ('fahrenheit' or 'celsius', default: 'fahrenheit')
     """
     # Get query parameters
     lat = request.GET.get('lat')
     lon = request.GET.get('lon')
     days = request.GET.get('days', '15')
+    units = request.GET.get('units', 'fahrenheit').lower()
     
     # Validate parameters
     if not lat or not lon:
@@ -85,25 +86,32 @@ def forecast(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    # Validate units parameter
+    if units not in ['fahrenheit', 'celsius']:
+        return Response(
+            {"error": "Units parameter must be 'fahrenheit' or 'celsius'"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     try:
-        # Step 1: Get the location name using reverse geocoding
+        # Get the location name
         location_name = get_location_name(lat, lon)
         
-        # Step 2: Get detailed weather forecast from Open-Meteo
-        forecast_data = get_open_meteo_forecast(lat, lon, days)
+        # Get weather forecast data
+        forecast_data = get_simplified_forecast(lat, lon, days, units)
         
-        # Process the forecast data
-        processed_data = {
+        # Build the response
+        response_data = {
             "location": location_name,
-            "latitude": lat,
-            "longitude": lon,
-            "units": "fahrenheit",
-            "forecast_source": "Open-Meteo",
-            "forecast": forecast_data,
-            "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            "units": {
+                "temperature": units,
+                "precipitation": "inches" if units == "fahrenheit" else "mm"
+            },
+            "days": forecast_data,
+            "updated": datetime.now().strftime('%Y-%m-%d %H:%M')
         }
         
-        return Response(processed_data)
+        return Response(response_data)
     
     except Exception as e:
         return Response(
@@ -142,117 +150,98 @@ def get_location_name(lat, lon):
         # If any error occurs, return a fallback location name
         return f"Location at {lat:.4f}, {lon:.4f}"
 
-def get_open_meteo_forecast(lat, lon, days=15):
-    """Get weather forecast data from Open-Meteo API"""
+def get_simplified_forecast(lat, lon, days=15, units="fahrenheit"):
+    """Get simplified daily weather forecast"""
     
     # Open-Meteo API URL
     url = "https://api.open-meteo.com/v1/forecast"
+    
+    # Set units based on temperature preference
+    temp_unit = units
+    precip_unit = "inch" if units == "fahrenheit" else "mm"
+    windspeed_unit = "mph" if units == "fahrenheit" else "kmh"
     
     # Parameters for the API request
     params = {
         "latitude": lat,
         "longitude": lon,
-        "temperature_unit": "fahrenheit",
-        "windspeed_unit": "mph",
-        "precipitation_unit": "inch",
+        "temperature_unit": temp_unit,
+        "precipitation_unit": precip_unit,
+        "windspeed_unit": windspeed_unit,
         "timezone": "auto",
         "forecast_days": days,
         "daily": [
             "temperature_2m_max",
             "temperature_2m_min",
-            "apparent_temperature_max",
-            "apparent_temperature_min",
             "precipitation_sum",
             "precipitation_probability_max",
-            "windspeed_10m_max",
-            "windgusts_10m_max",
-            "winddirection_10m_dominant",
-            "shortwave_radiation_sum",
-            "uv_index_max",
-            "weathercode"
-        ],
-        "current": [
-            "temperature_2m",
-            "relative_humidity_2m",
-            "apparent_temperature",
-            "precipitation",
             "weathercode",
-            "windspeed_10m",
-            "winddirection_10m"
+            "sunrise",
+            "sunset"
+        ],
+        "hourly": [
+            "relative_humidity_2m"
         ]
     }
     
-    # Make the API request
+    # Make API request
     response = requests.get(url, params=params)
     response.raise_for_status()
     data = response.json()
     
-    # Process current conditions
-    current_conditions = {}
-    if 'current' in data:
-        current = data['current']
-        
-        # Get weather description based on code
-        weather_code = current.get('weathercode')
-        weather_description = get_weather_description(weather_code)
-        
-        current_conditions = {
-            "temperature": current.get('temperature_2m'),
-            "feels_like": current.get('apparent_temperature'),
-            "humidity": current.get('relative_humidity_2m'),
-            "wind_speed": current.get('windspeed_10m'),
-            "wind_direction": get_wind_direction(current.get('winddirection_10m')),
-            "precipitation": current.get('precipitation'),
-            "description": weather_description,
-            "observed_time": current.get('time')
-        }
+    # Format date in MM/DD/YYYY format (e.g. 4/4/2025)
+    def format_date(date_str):
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            return date_obj.strftime("%-m/%-d/%Y")
+        except:
+            return date_str
     
     # Process daily forecast data
     daily_forecasts = []
-    
-    if 'daily' in data:
+    if 'daily' in data and 'time' in data['daily']:
         daily = data['daily']
-        time_values = daily.get('time', [])
-        
-        for i in range(len(time_values)):
-            date_str = time_values[i]
+        for i, date_str in enumerate(daily['time']):
+            # Calculate average humidity for the day
+            avg_humidity = None
+            if 'hourly' in data and 'time' in data['hourly'] and 'relative_humidity_2m' in data['hourly']:
+                # Filter hourly data for this day
+                hourly_times = data['hourly']['time']
+                hourly_humidity = data['hourly']['relative_humidity_2m']
+                
+                day_humidity = []
+                for j, hourly_time in enumerate(hourly_times):
+                    if hourly_time.startswith(date_str) and j < len(hourly_humidity):
+                        if hourly_humidity[j] is not None:
+                            day_humidity.append(hourly_humidity[j])
+                
+                if day_humidity:
+                    avg_humidity = round(sum(day_humidity) / len(day_humidity))
             
-            # Get weather description based on code
-            weather_code = daily.get('weathercode', [])[i] if 'weathercode' in daily and i < len(daily['weathercode']) else None
+            # Get weather description
+            weather_code = daily['weathercode'][i] if 'weathercode' in daily and i < len(daily['weathercode']) else None
             weather_description = get_weather_description(weather_code)
             
-            # Calculate wind direction
-            wind_dir_value = daily.get('winddirection_10m_dominant', [])[i] if 'winddirection_10m_dominant' in daily and i < len(daily['winddirection_10m_dominant']) else None
-            wind_direction = get_wind_direction(wind_dir_value)
-            
-            # Get precipitation probability
-            precip_prob = daily.get('precipitation_probability_max', [])[i] if 'precipitation_probability_max' in daily and i < len(daily['precipitation_probability_max']) else None
-            
-            forecast = {
-                "date": date_str,
-                "temp_max": daily.get('temperature_2m_max', [])[i] if 'temperature_2m_max' in daily and i < len(daily['temperature_2m_max']) else None,
-                "temp_min": daily.get('temperature_2m_min', [])[i] if 'temperature_2m_min' in daily and i < len(daily['temperature_2m_min']) else None,
-                "feels_like_max": daily.get('apparent_temperature_max', [])[i] if 'apparent_temperature_max' in daily and i < len(daily['apparent_temperature_max']) else None,
-                "feels_like_min": daily.get('apparent_temperature_min', [])[i] if 'apparent_temperature_min' in daily and i < len(daily['apparent_temperature_min']) else None,
-                "precipitation": daily.get('precipitation_sum', [])[i] if 'precipitation_sum' in daily and i < len(daily['precipitation_sum']) else None,
-                "precipitation_probability": precip_prob,
-                "wind_speed": daily.get('windspeed_10m_max', [])[i] if 'windspeed_10m_max' in daily and i < len(daily['windspeed_10m_max']) else None,
-                "wind_gusts": daily.get('windgusts_10m_max', [])[i] if 'windgusts_10m_max' in daily and i < len(daily['windgusts_10m_max']) else None,
-                "wind_direction": wind_direction,
-                "description": weather_description,
-                "uv_index": daily.get('uv_index_max', [])[i] if 'uv_index_max' in daily and i < len(daily['uv_index_max']) else None
+            # Format data for this day
+            formatted_date = format_date(date_str)
+            day_data = {
+                "date": formatted_date,
+                "temp_high": daily['temperature_2m_max'][i] if 'temperature_2m_max' in daily and i < len(daily['temperature_2m_max']) else None,
+                "temp_low": daily['temperature_2m_min'][i] if 'temperature_2m_min' in daily and i < len(daily['temperature_2m_min']) else None,
+                "humidity": avg_humidity,
+                "precipitation": {
+                    "amount": daily['precipitation_sum'][i] if 'precipitation_sum' in daily and i < len(daily['precipitation_sum']) else 0,
+                    "chance": daily['precipitation_probability_max'][i] if 'precipitation_probability_max' in daily and i < len(daily['precipitation_probability_max']) else 0
+                },
+                "weather": weather_description
             }
             
-            daily_forecasts.append(forecast)
+            daily_forecasts.append(day_data)
     
-    # Return both current conditions and daily forecasts
-    return {
-        "current": current_conditions,
-        "daily": daily_forecasts
-    }
+    return daily_forecasts
 
 def get_weather_description(code):
-    """Convert Open-Meteo weather code to description"""
+    """Convert weather code to description"""
     weather_codes = {
         0: "Clear sky",
         1: "Mainly clear",
@@ -288,14 +277,3 @@ def get_weather_description(code):
         return "Unknown"
     
     return weather_codes.get(code, "Unknown")
-
-def get_wind_direction(degrees):
-    """Convert wind direction in degrees to cardinal direction"""
-    if degrees is None:
-        return "Unknown"
-    
-    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", 
-                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-    
-    index = round(degrees / 22.5) % 16
-    return directions[index]
