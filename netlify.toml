@@ -1,0 +1,11 @@
+[build]
+  command = "pip uninstall -y setuptools pip && pip install setuptools==59.8.0 wheel && pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && python manage.py collectstatic --noinput"
+  publish = "."
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 
