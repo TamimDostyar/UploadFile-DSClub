@@ -38,7 +38,21 @@ def download_model():
     try:
         model_id = "dostah01/shark"
         print(f"Downloading model from {model_id}...")
-        model_file = hf_hub_download(repo_id=model_id, filename="corn_model_1.keras", local_dir=BASE_DIR)
+        
+        # Set a public access token if needed (or use environment variable)
+        token = os.environ.get("HF_TOKEN", None)
+        if token:
+            print("Using provided Hugging Face token")
+        else:
+            print("No Hugging Face token provided - attempting download without authentication")
+            
+        model_file = hf_hub_download(
+            repo_id=model_id, 
+            filename="corn_model_1.keras", 
+            local_dir=BASE_DIR,
+            token=token,
+            force_download=True  # Force download even if cached
+        )
         print(f"Model downloaded successfully to {model_file}")
         print("Download complete!")
         return model_file

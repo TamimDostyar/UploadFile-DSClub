@@ -8,4 +8,6 @@ services:
       - key: PYTHONUNBUFFERED
         value: 1
       - key: DJANGO_SETTINGS_MODULE
-        value: fileupload.settings 
+        value: fileupload.settings
+      - key: HF_TOKEN
+        sync: false  # This tells Render to treat this as a secret 
