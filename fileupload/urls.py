@@ -26,4 +26,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('delete/<int:file_id>/', views.delete_file, name='delete_file'),
+    # Add the forecast endpoint
+    path('forecast/', views.forecast, name='forecast'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
