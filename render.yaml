@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: teamshark
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./render_start.sh
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: DJANGO_SETTINGS_MODULE
+        value: fileupload.settings 
