@@ -11,7 +11,7 @@ import requests
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def home(request):
     if request.method == 'POST':
@@ -194,7 +194,7 @@ def get_simplified_forecast(lat, lon, days=15, units="fahrenheit"):
         try:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d")
             return date_obj.strftime("%-m/%-d/%Y")
-        except:
+        except Exception:
             return date_str
     
     # Process daily forecast data
