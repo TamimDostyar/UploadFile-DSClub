@@ -6,6 +6,6 @@ else
     echo "Virtual environment already exists"
     source .venv/bin/activate
 fi
-
+pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
