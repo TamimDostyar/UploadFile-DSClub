@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, update_session_auth_hash, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .models import UploadedFile, Farmer
 from .forms import UploadFileForm, FarmerRegistrationForm
 from .ml_processor import predict_image
@@ -16,6 +16,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
+
+# Simple health check endpoint for Render.com to detect
+def health_check(request):
+    return HttpResponse("OK", status=200)
 
 def get_location_name(latitude, longitude):
     try:
