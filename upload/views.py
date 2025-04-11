@@ -65,7 +65,9 @@ def profile(request):
             user.email = request.POST.get('email')
             user.phone_number = request.POST.get('phone_number')
             user.farm_location = request.POST.get('farm_location')
-            user.days = request.POST.get('days')
+            
+            # We're not updating the days field from the profile form anymore
+            # The days value will remain unchanged
             
             if 'profile_picture' in request.FILES:
                 user.profile_picture = request.FILES['profile_picture']

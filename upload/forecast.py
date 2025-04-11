@@ -10,7 +10,8 @@ from datetime import datetime
 def weather_forecast(longitude, latitude, days):
     try:
         # Ensure the days parameter is valid
-        days = min(max(int(days), 1), 14)  # Clamp between 1 and 14
+        # We need at least 14 days for showing day 7 and day 14
+        days = max(int(days), 14)  # Always fetch at least 14 days
         
         # Direct call to Open-Meteo API instead of going through backend
         url = "https://api.open-meteo.com/v1/forecast"

@@ -10,4 +10,9 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: fileupload.settings
       - key: HF_TOKEN
-        sync: false  # This tells Render to treat this as a secret 
+        sync: false
+    disk:
+      name: app-data
+      mountPath: /opt/render/app-data
+      sizeGB: 2
+    autoDeploy: false

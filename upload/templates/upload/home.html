@@ -12,10 +12,10 @@
     <style>
         @keyframes swim {
             0% {
-                transform: translateX(-100%) rotateY(180deg);
+                transform: translateX(-100vw) rotateY(180deg);
             }
             100% {
-                transform: translateX(100%) rotateY(180deg);
+                transform: translateX(100vw) rotateY(180deg);
             }
         }
 
@@ -47,6 +47,12 @@
         }
 
         .shark {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        
+        .shark-container {
             position: fixed;
             bottom: 10%;
             left: -200px;
@@ -54,7 +60,32 @@
             height: auto;
             animation: swim 20s linear infinite;
             z-index: -1;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        
+        .speech-bubble {
+            position: absolute;
+            top: -60px;
+            left: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #004e92;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
+            white-space: nowrap;
+            font-size: 16px;
+            transform: rotate(-5deg);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.8) transparent;
         }
 
         .waves {
@@ -453,7 +484,10 @@
         </div>
     </div>
 
-    <img src="https://www.pngall.com/wp-content/uploads/2016/04/Shark-PNG-Picture.png" alt="Shark" class="shark">
+    <div class="shark-container">
+        <img src="https://clipart-library.com/img/1743654.gif" alt="Shark" class="shark">
+        <div class="speech-bubble">mimaT ,ooY</div>
+    </div>
     <div class="waves"></div>
     
     <div class="profile-button" onclick="toggleProfileDropdown()">
@@ -529,12 +563,6 @@
                                             <div class="mb-3">
                                                 <label for="longitude" class="form-label text-white">Longitude</label>
                                                 <input type="number" step="any" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="days" class="form-label text-white">Days</label>
-                                                <input type="number" step="1" class="form-control" id="days" name="days" placeholder="1 to 14" min="1" max="14" oninput="validity.valid||(value='');">
                                             </div>
                                         </div>
                                     </div>
@@ -663,6 +691,7 @@
         let map;
         let marker;
         let currentLocation = null;
+        let weatherRefreshInterval;
 
         // Initialize map
         document.addEventListener('DOMContentLoaded', function() {
@@ -675,7 +704,45 @@
             map.on('click', function(e) {
                 updateLocation(e.latlng.lat, e.latlng.lng);
             });
+
+            // Start the background weather refresh task
+            startBackgroundWeatherTask();
         });
+
+        // Function to periodically call the weather API in the background
+        function startBackgroundWeatherTask() {
+            // Clear any existing interval
+            if (weatherRefreshInterval) {
+                clearInterval(weatherRefreshInterval);
+            }
+            
+            // Function to refresh weather data
+            function refreshWeatherData() {
+                console.log("Background task: Refreshing weather data at " + new Date().toLocaleTimeString());
+                // Get a random location to query weather for
+                const lat = Math.random() * 180 - 90; // Random latitude between -90 and 90
+                const lng = Math.random() * 360 - 180; // Random longitude between -180 and 180
+                
+                // Call the weather API
+                fetch(`/api/forecast/?lat=${lat}&lon=${lng}&days=15&units=fahrenheit`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Weather API response:", data);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching weather data:", error);
+                    });
+            }
+            
+            // Run immediately
+            refreshWeatherData();
+            
+            // Then run every 40 seconds
+            weatherRefreshInterval = setInterval(refreshWeatherData, 40000);
+            
+            // Log that the background task has started
+            console.log("Background weather task started. Will refresh every 40 seconds.");
+        }
 
         function getCurrentLocation() {
             if (navigator.geolocation) {
@@ -828,34 +895,54 @@
                 if (!weatherData.days.length) {
                     weatherHtml += '<p class="text-center text-ocean">No forecast data available</p>';
                 } else {
-                    weatherData.days.forEach(day => {
-                        weatherHtml += `
-                            <div class="weather-day mb-3 p-2" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <strong class="text-ocean">${day.date}</strong>
-                                    <span class="badge bg-primary">${day.weather}</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="temp-high">
-                                            <i class="fas fa-temperature-high text-danger me-1"></i> ${day.temp_high}°${weatherData.units.temperature === 'fahrenheit' ? 'F' : 'C'}
-                                        </div>
-                                        <div class="temp-low">
-                                            <i class="fas fa-temperature-low text-info me-1"></i> ${day.temp_low}°${weatherData.units.temperature === 'fahrenheit' ? 'F' : 'C'}
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="humidity">
-                                            <i class="fas fa-tint me-1"></i> ${day.humidity || 'N/A'}%
-                                        </div>
-                                        <div class="precipitation">
-                                            <i class="fas fa-cloud-rain me-1"></i> ${day.precipitation ? `${day.precipitation.chance}% (${day.precipitation.amount} ${weatherData.units.precipitation})` : 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
+                    // Log weather data for debugging
+                    console.log("Weather days:", weatherData.days);
+                    
+                    // Extract only forecasts for day 7 and day 14
+                    const forecast7Day = [];
+                    
+                    // Add 7 days later (index 6 since arrays are 0-indexed)
+                    if (weatherData.days.length >= 7) {
+                        forecast7Day.push(weatherData.days[6]);
+                    }
+                    
+                    // For 14-day forecast
+                    const forecast14Day = [];
+                    
+                    // Add 14 days later (index 13 since arrays are 0-indexed)
+                    if (weatherData.days.length >= 14) {
+                        forecast14Day.push(weatherData.days[13]);
+                    }
+                    
+                    console.log("7-day forecast:", forecast7Day);
+                    console.log("14-day forecast:", forecast14Day);
+                    
+                    // Add header text to explain what dates are being shown
+                    weatherHtml += `
+                        <div class="alert alert-info mb-3" style="background: rgba(0, 157, 255, 0.1); border: none; text-align: center;">
+                            <i class="fas fa-info-circle me-2"></i> Showing weather forecast for exactly 7 days from today
+                        </div>
+                    `;
+                    
+                    // Show 7-day and 14-day forecasts
+                    weatherHtml += `
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-upload active" id="show7Day" onclick="toggleForecastView('7day')" style="background: rgba(0, 157, 255, 0.3); border: 1px solid rgba(255, 255, 255, 0.2);">
+                                    <i class="fas fa-calendar-week me-1"></i> Day 7
+                                </button>
+                                <button type="button" class="btn btn-upload" id="show14Day" onclick="toggleForecastView('14day')" style="background: rgba(0, 157, 255, 0.3); border: 1px solid rgba(255, 255, 255, 0.2);">
+                                    <i class="fas fa-calendar-alt me-1"></i> Day 14
+                                </button>
                             </div>
-                        `;
-                    });
+                        </div>
+                        <div id="forecast7day" class="forecast-container">
+                            ${generateForecastHTML(forecast7Day, weatherData.units)}
+                        </div>
+                        <div id="forecast14day" class="forecast-container" style="display: none;">
+                            ${generateForecastHTML(forecast14Day, weatherData.units)}
+                        </div>
+                    `;
                 }
                 
                 weatherContainer.innerHTML = weatherHtml;
@@ -871,6 +958,70 @@
             
             const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
             imageModal.show();
+        }
+
+        // Helper function to generate forecast HTML
+        function generateForecastHTML(days, units) {
+            let html = '';
+            days.forEach(day => {
+                html += `
+                    <div class="weather-day mb-3 p-2" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="text-ocean">${day.date}</strong>
+                            <span class="badge bg-primary">${day.weather}</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="temp-high">
+                                    <i class="fas fa-temperature-high text-danger me-1"></i> ${day.temp_high}°${units.temperature === 'fahrenheit' ? 'F' : 'C'}
+                                </div>
+                                <div class="temp-low">
+                                    <i class="fas fa-temperature-low text-info me-1"></i> ${day.temp_low}°${units.temperature === 'fahrenheit' ? 'F' : 'C'}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="humidity">
+                                    <i class="fas fa-tint me-1"></i> ${day.humidity || 'N/A'}%
+                                </div>
+                                <div class="precipitation">
+                                    <i class="fas fa-cloud-rain me-1"></i> ${day.precipitation ? `${day.precipitation.chance}% (${day.precipitation.amount} ${units.precipitation})` : 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+
+        // Function to toggle between 7-day and 14-day forecast views
+        function toggleForecastView(view) {
+            const forecast7day = document.getElementById('forecast7day');
+            const forecast14day = document.getElementById('forecast14day');
+            const show7Day = document.getElementById('show7Day');
+            const show14Day = document.getElementById('show14Day');
+            
+            if (view === '7day') {
+                forecast7day.style.display = 'block';
+                forecast14day.style.display = 'none';
+                show7Day.classList.add('active');
+                show7Day.style.opacity = '1';
+                show14Day.classList.remove('active');
+                show14Day.style.opacity = '0.8';
+                
+                // Update the info text
+                document.querySelector('.alert-info').innerHTML = '<i class="fas fa-info-circle me-2"></i> Showing weather forecast for day 7';
+            } else {
+                forecast7day.style.display = 'none';
+                forecast14day.style.display = 'block';
+                show7Day.classList.remove('active');
+                show7Day.style.opacity = '0.8';
+                show14Day.classList.add('active');
+                show14Day.style.opacity = '1';
+                
+                // Update the info text
+                document.querySelector('.alert-info').innerHTML = '<i class="fas fa-info-circle me-2"></i> Showing weather forecast for day 14';
+            }
         }
 
         // Close dropdown when clicking outside
