@@ -4,6 +4,7 @@ astunparse==1.6.3
 certifi==2025.1.31
 charset-normalizer==3.4.1
 Django==5.2
+django-extensions==3.2.3
 djangorestframework==3.16.0
 filelock==3.18.0
 flatbuffers==25.2.10
@@ -35,6 +36,7 @@ packaging==24.2
 pillow==11.1.0
 protobuf==5.29.4
 Pygments==2.19.1
+pyOpenSSL==24.1.0
 pytz==2025.2
 PyYAML==6.0.2
 requests==2.32.3
