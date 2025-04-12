@@ -74,8 +74,8 @@
             box-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
             white-space: nowrap;
             font-size: 16px;
-            transform: rotate(-5deg);
             font-family: 'Comic Sans MS', cursive, sans-serif;
+            transform: scaleX(-1);
         }
         
         .speech-bubble:after {
@@ -486,7 +486,7 @@
 
     <div class="shark-container">
         <img src="https://clipart-library.com/img/1743654.gif" alt="Shark" class="shark">
-        <div class="speech-bubble">mimaT ,ooY</div>
+        <div class="speech-bubble">{% if user.name %}{{ "Yo, "|add:user.name }}{% else %}{{ "Yo, "|add:user.username }}{% endif %}</div>
     </div>
     <div class="waves"></div>
     

@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import UploadedFile, Farmer
 
 class FarmerRegistrationForm(UserCreationForm):
+    name = forms.CharField(max_length=100, required=True)
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=15, required=True)
     farm_location = forms.CharField(max_length=200, required=True)
@@ -10,7 +11,7 @@ class FarmerRegistrationForm(UserCreationForm):
 
     class Meta:
         model = Farmer
-        fields = ('username', 'email', 'phone_number', 'farm_location', 'profile_picture', 'password1', 'password2')
+        fields = ('username', 'name', 'email', 'phone_number', 'farm_location', 'profile_picture', 'password1', 'password2')
 
 class UploadFileForm(forms.ModelForm):
     class Meta:

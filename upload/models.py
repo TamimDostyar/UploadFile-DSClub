@@ -5,6 +5,7 @@ import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Farmer(AbstractUser):
+    name = models.CharField(max_length=100, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     farm_location = models.CharField(max_length=200, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
