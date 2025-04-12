@@ -15,5 +15,5 @@ export TF_FORCE_GPU_ALLOW_GROWTH=true
 export TF_MEMORY_ALLOCATION=0.2
 
 python manage.py migrate
-# Use SSL for the development server
-python manage.py runserver_plus 0.0.0.0:8000 --cert-file=ssl/cert.pem --key-file=ssl/key.pem
+# Use SSL for the development server with absolute path to the certificates
+python manage.py runserver_plus 0.0.0.0:8000 --cert-file=$HOME/ssl/cert.pem --key-file=$HOME/ssl/key.pem
