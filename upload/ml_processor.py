@@ -2,13 +2,19 @@ import tensorflow as tf
 import numpy as np
 from keras.models import load_model
 import os
+from PIL import Image
 
 # Load model from the Notebook directory
 model = load_model(os.path.join(os.path.dirname(__file__), "Notebook", "corn_model_1.keras"))
 
 def load_and_preprocess_image(image_path):
     img = tf.io.read_file(image_path)
-    img = tf.image.decode_jpeg(img, channels=3)
+    # Check file extension to determine decoding method
+    if image_path.lower().endswith('.png'):
+        img = tf.image.decode_png(img, channels=3)
+    else:
+        # Default to JPEG for all other formats
+        img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, (224, 224))
     img = img / 255.0
     return img
@@ -25,7 +31,19 @@ def predict_image(image_path):
     """
     try:
         # Preprocess the image
-        image = load_and_preprocess_image(image_path)
+        try:
+            image = load_and_preprocess_image(image_path)
+        except Exception as img_error:
+            # If there's an error with specific decoders, try a more general approach
+            print(f"Error with standard image decoding: {str(img_error)}. Trying alternative method...")
+            
+            # Try a more flexible approach
+            with Image.open(image_path) as img:
+                img = img.convert('RGB')
+                img = img.resize((224, 224))
+                img_array = np.array(img) / 255.0
+                image = tf.convert_to_tensor(img_array)
+        
         image = tf.expand_dims(image, axis=0)
         
         # Make prediction

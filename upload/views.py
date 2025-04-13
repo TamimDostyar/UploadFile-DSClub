@@ -135,7 +135,7 @@ def home(request):
                 # Get forecast data and location name if coordinates are provided
                 if latitude and longitude and file.forecast_days:
                     try:
-                        from .forecast import weather_forecast, get_location_name
+                        from .forecast import weather_forecast, get_location_name, get_disease_spread
                         
                         # Get a proper location name first
                         file.location_name = get_location_name(latitude, longitude)
@@ -146,6 +146,42 @@ def home(request):
                             latitude, 
                             file.forecast_days
                         )
+                        
+                        # Calculate disease spread likelihood if we have prediction and forecast data
+                        if prediction and forecast_data and 'days' in forecast_data and forecast_data['days']:
+                            # Initialize disease spread data storage
+                            disease_spread_data = {}
+                            
+                            # Day indices (0-based, so day 7 is index 6, day 14 is index 13)
+                            forecast_days = [
+                                {'index': 6, 'name': 'day7'},     # Day 7
+                                {'index': 13, 'name': 'day14'}    # Day 14
+                            ]
+                            
+                            # Calculate for each day if available
+                            for day_info in forecast_days:
+                                day_index = day_info['index']
+                                day_name = day_info['name']
+                                
+                                if len(forecast_data['days']) > day_index:
+                                    day = forecast_data['days'][day_index]
+                                    avg_temp = (day.get('temp_high', 0) + day.get('temp_low', 0)) / 2
+                                    humidity = day.get('humidity', 0) / 100  # Convert percentage to decimal
+                                    
+                                    # Get spread prediction for this day
+                                    spread_prediction = get_disease_spread(prediction, humidity, avg_temp)
+                                    
+                                    # Store the prediction for this day
+                                    disease_spread_data[day_name] = {
+                                        'prediction': spread_prediction,
+                                        'disease': prediction,
+                                        'humidity': humidity,
+                                        'temperature': avg_temp,
+                                        'date': day.get('date', 'Unknown date')
+                                    }
+                            
+                            # Add spread predictions to forecast data
+                            forecast_data['disease_spread'] = disease_spread_data
                         
                         # Store the forecast data in the session for this file
                         if not request.session.get('file_forecasts'):

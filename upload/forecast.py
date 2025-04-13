@@ -2,6 +2,7 @@ import requests
 import json
 import os
 from datetime import datetime
+from .ml_processor import predict_image
 
 '''
     Here all we do is get the weather forecast for the days mentioned in the request
@@ -206,6 +207,60 @@ def format_forecast_data(api_data, location_name, units="fahrenheit"):
         "days": daily_forecasts,
         "updated": datetime.now().strftime('%Y-%m-%d %H:%M')
     }
+
+# These hardcoded weather values are for testing only - in production, they would come from weather API
+humidity = 0.60
+max_temperature = 52
+min_temperature = 40
+temp = (max_temperature + min_temperature)/2
+
+def get_disease_spread(prediction, humidity, temperature):
+    """
+    Evaluate the likelihood of disease spread based on the disease prediction and weather conditions
+    
+    Args:
+        prediction: The disease prediction from the ML model (blight, common_rust, gray_leaf_spot, healthy)
+        humidity: Relative humidity as a decimal (0.0-1.0)
+        temperature: Temperature in Fahrenheit
+        
+    Returns:
+        str: A string indicating the likelihood of disease spread
+    """
+    # Convert model prediction format to checkspread format
+    disease_mapping = {
+        "blight": "Blight",
+        "common_rust": "Common Rust",
+        "gray_leaf_spot": "Gray Leaf Spot", 
+        "healthy": "Healthy"
+    }
+    
+    disease = disease_mapping.get(prediction, "Unknown")
+    
+    # Use the checkspread function to determine spread likelihood
+    return checkspread(disease, humidity, temperature)
+
+def checkspread(disease, humidity, temperature):
+    if disease == "Healthy":
+        spread = "Spread Unlikely"
+
+    elif disease == "Common Rust":
+        if humidity >= 0.95 and (temperature <= 77 and temperature >= 60):
+            spread = "Spread likely"
+        else: spread = "Spread Unlikely"
+
+    elif disease == "Gray Leaf Spot":
+        if humidity >= 0.90 and (temperature <= 85 and temperature >= 75):
+            spread = "Spread likely"
+        else: spread = "Spread Unlikely"
+
+    elif disease == "Blight":
+        if humidity >= 0.60 and (temperature <= 81 and temperature >= 64):
+            spread = "Spread likely"
+        else: spread = "Spread Unlikely"
+    else:
+        spread = "Unknown spread conditions"
+        
+    return spread
 
 def get_weather_description(code):
     """Convert weather code to description"""

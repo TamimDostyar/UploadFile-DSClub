@@ -306,12 +306,31 @@
         }
 
         .confidence-badge {
-            background: rgba(40, 167, 69, 0.3);
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #10b981;
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            border-radius: 10px;
             font-size: 0.9rem;
-            margin-left: 0.5rem;
+            margin: 0 5px;
+        }
+
+        .disease-spread-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #f59e0b;
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin: 0 5px;
+        }
+        
+        .disease-spread-badge.likely {
+            background-color: #ef4444;
+        }
+        
+        .disease-spread-badge.unlikely {
+            background-color: #10b981;
         }
 
         .location-info {
@@ -664,6 +683,11 @@
                                 <span id="modalConfidence" class="confidence-badge">
                                     <i class="fas fa-chart-line me-2"></i>Confidence: N/A
                                 </span>
+                                <div id="diseaseSpreadInfo" class="mt-2" style="display: none;">
+                                    <span id="modalDiseaseSpread" class="disease-spread-badge">
+                                        <i class="fas fa-virus me-2"></i>Spread: N/A
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-5">
@@ -867,6 +891,10 @@
             document.getElementById('modalPrediction').innerHTML = `<i class="fas fa-robot me-2"></i>Prediction: ${prediction}`;
             document.getElementById('modalConfidence').innerHTML = `<i class="fas fa-chart-line me-2"></i>Confidence: ${confidence}`;
             
+            // We're removing the disease spread info at the top of the modal
+            const diseaseSpreadInfo = document.getElementById('diseaseSpreadInfo');
+            diseaseSpreadInfo.style.display = 'none';
+            
             // Update weather forecast section
             const weatherContainer = document.getElementById('weatherContainer');
             if (weatherData && weatherData.days) {
@@ -937,10 +965,10 @@
                             </div>
                         </div>
                         <div id="forecast7day" class="forecast-container">
-                            ${generateForecastHTML(forecast7Day, weatherData.units)}
+                            ${generateForecastHTML(forecast7Day, weatherData.units, weatherData)}
                         </div>
                         <div id="forecast14day" class="forecast-container" style="display: none;">
-                            ${generateForecastHTML(forecast14Day, weatherData.units)}
+                            ${generateForecastHTML(forecast14Day, weatherData.units, weatherData)}
                         </div>
                     `;
                 }
@@ -961,9 +989,41 @@
         }
 
         // Helper function to generate forecast HTML
-        function generateForecastHTML(days, units) {
+        function generateForecastHTML(days, units, weatherData) {
             let html = '';
             days.forEach(day => {
+                const dayDate = day.date;
+                
+                // Find if we have spread data for this day
+                let spreadInfo = null;
+                if (weatherData && weatherData.disease_spread) {
+                    // Check for day7 or day14 by comparing dates
+                    Object.keys(weatherData.disease_spread).forEach(key => {
+                        if (weatherData.disease_spread[key].date === dayDate) {
+                            spreadInfo = weatherData.disease_spread[key];
+                        }
+                    });
+                }
+                
+                // Determine spread styling
+                let spreadHtml = '';
+                if (spreadInfo) {
+                    const isSpreadLikely = spreadInfo.prediction.toLowerCase().includes('likely');
+                    const spreadColor = isSpreadLikely ? '#ef4444' : '#10b981';
+                    
+                    spreadHtml = `
+                        <div class="mt-3 p-2" style="background: ${isSpreadLikely ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}; border-radius: 8px;">
+                            <h6 class="mb-1"><i class="fas fa-virus me-1"></i> Disease Spread:</h6>
+                            <p class="mb-1" style="color: ${spreadColor}"><strong>${spreadInfo.prediction}</strong></p>
+                            <p class="mb-0 small">For ${spreadInfo.disease}</p>
+                            <div class="mt-2 small">
+                                <p class="mb-0"><i class="fas fa-temperature-high me-1"></i> Temp: ${spreadInfo.temperature.toFixed(1)}°${units.temperature === 'fahrenheit' ? 'F' : 'C'}</p>
+                                <p class="mb-0"><i class="fas fa-tint me-1"></i> Humidity: ${(spreadInfo.humidity * 100).toFixed(0)}%</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 html += `
                     <div class="weather-day mb-3 p-2" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -988,6 +1048,7 @@
                                 </div>
                             </div>
                         </div>
+                        ${spreadHtml}
                     </div>
                 `;
             });
