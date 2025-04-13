@@ -61,7 +61,8 @@ def predict_image(image_path):
         
     except Exception as e:
         print(f"Error in prediction: {str(e)}")
-        raise e
+        # Instead of raising the exception, return a default value
+        return "Error processing image", 0.0
 
 # Testing code (runs when this module is executed directly)
 if __name__ == "__main__":
