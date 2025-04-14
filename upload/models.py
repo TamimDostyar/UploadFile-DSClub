@@ -25,6 +25,7 @@ class UploadedFile(models.Model):
     prediction = models.CharField(max_length=50, null=True, blank=True)
     confidence = models.FloatField(null=True, blank=True)
     forecast_days = models.IntegerField(default=2, null=True, blank=True)
+    weather_forecast = models.JSONField(null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if not self.title:

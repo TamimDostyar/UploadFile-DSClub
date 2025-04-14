@@ -99,7 +99,40 @@ def profile(request):
     return render(request, 'upload/profile.html')
 
 @login_required
+def migrate_weather_data(request):
+    """
+    One-time function to migrate weather data from session to database
+    """
+    file_forecasts = request.session.get('file_forecasts', {})
+    migrated_count = 0
+    
+    if file_forecasts:
+        # Get all files for this user
+        files = UploadedFile.objects.filter(farmer=request.user)
+        
+        for file in files:
+            file_id = str(file.id)
+            if file_id in file_forecasts and not file.weather_forecast:
+                # Transfer from session to database
+                file.weather_forecast = file_forecasts[file_id]
+                file.save(update_fields=['weather_forecast'])
+                migrated_count += 1
+        
+        if migrated_count > 0:
+            print(f"Migrated {migrated_count} weather records from session to database")
+    
+    # Mark migration as complete in the session
+    request.session['weather_migration_complete'] = True
+    request.session.modified = True
+    
+    return migrated_count
+
+@login_required
 def home(request):
+    # Check if we need to migrate weather data from session to database
+    if not request.session.get('weather_migration_complete', False):
+        migrate_weather_data(request)
+        
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -183,7 +216,10 @@ def home(request):
                             # Add spread predictions to forecast data
                             forecast_data['disease_spread'] = disease_spread_data
                         
-                        # Store the forecast data in the session for this file
+                        # Store the forecast data in the database
+                        file.weather_forecast = forecast_data
+                        
+                        # Also store in session for backward compatibility
                         if not request.session.get('file_forecasts'):
                             request.session['file_forecasts'] = {}
                         
@@ -230,16 +266,21 @@ def home(request):
     # Only show files uploaded by the current user
     files = UploadedFile.objects.filter(farmer=request.user).order_by('-uploaded_at')
     
-    # Add weather data to files from session storage instead of making API calls
+    # Add weather data to files from database or session as fallback
     file_forecasts = request.session.get('file_forecasts', {})
     
     for file in files:
-        # Add the weather data from session if available
-        file_id = str(file.id)
-        if file_id in file_forecasts:
-            file.weather_data = file_forecasts[file_id]
+        # First try to get weather data from database
+        if file.weather_forecast:
+            file.weather_data = file.weather_forecast
+        # Fallback to session if database is empty
+        elif str(file.id) in file_forecasts:
+            file.weather_data = file_forecasts[str(file.id)]
+            # If we found it in session but not in DB, update the DB
+            file.weather_forecast = file_forecasts[str(file.id)]
+            file.save(update_fields=['weather_forecast'])
         else:
-            # If no weather data in session, set to None - don't fetch it
+            # If no weather data in database or session, set to None
             file.weather_data = None
     
     return render(request, 'upload/home.html', {'form': form, 'files': files})
