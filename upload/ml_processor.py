@@ -17,13 +17,32 @@ def load_and_preprocess_image(image_path):
             return tf.convert_to_tensor(img_array)
     except Exception as e:
         print(f"Error loading image with PIL: {str(e)}")
-        # Fall back to TensorFlow method if PIL fails
-        img = tf.io.read_file(image_path)
-        # Try to determine format automatically
-        img = tf.image.decode_image(img, channels=3)
-        img = tf.image.resize(img, (224, 224))
-        img = img / 255.0
-        return img
+        try:
+            # Fall back to TensorFlow method if PIL fails
+            img = tf.io.read_file(image_path)
+            # Try different decoders based on file extension
+            file_ext = os.path.splitext(image_path)[1].lower()
+            
+            if file_ext in ['.jpg', '.jpeg']:
+                img = tf.image.decode_jpeg(img, channels=3)
+            elif file_ext == '.png':
+                img = tf.image.decode_png(img, channels=3)
+            elif file_ext == '.bmp':
+                img = tf.image.decode_bmp(img)
+            elif file_ext in ['.gif', '.webp']:
+                # For other formats, try generic decode_image
+                img = tf.image.decode_image(img, channels=3)
+            else:
+                # Last resort - try generic decoder
+                img = tf.image.decode_image(img, channels=3)
+                
+            img = tf.image.resize(img, (224, 224))
+            img = img / 255.0
+            return img
+        except Exception as nested_e:
+            print(f"All image loading methods failed: {str(nested_e)}")
+            # Return a blank image rather than failing completely
+            return tf.zeros((224, 224, 3))
 
 def predict_image(image_path):
     """
@@ -36,6 +55,16 @@ def predict_image(image_path):
         (str, float): A tuple containing predicted class label and confidence score
     """
     try:
+        # Validate file exists
+        if not os.path.exists(image_path):
+            return "File not found", 0.0
+            
+        # Validate file is an image
+        try:
+            Image.open(image_path).verify()
+        except Exception:
+            return "Invalid image file", 0.0
+            
         # Preprocess the image
         image = load_and_preprocess_image(image_path)
         image = tf.expand_dims(image, axis=0)
