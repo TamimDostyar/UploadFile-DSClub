@@ -16,6 +16,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 # Simple health check endpoint for Render.com to detect
 def health_check(request):
@@ -29,6 +30,7 @@ def get_location_name(latitude, longitude):
     except GeocoderTimedOut:
         return f"{latitude}, {longitude}"
 
+@ensure_csrf_cookie
 def register(request):
     if request.method == 'POST':
         form = FarmerRegistrationForm(request.POST, request.FILES)
@@ -41,6 +43,7 @@ def register(request):
         form = FarmerRegistrationForm()
     return render(request, 'upload/register.html', {'form': form})
 
+@ensure_csrf_cookie
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- CSRF Meta Tags to help with CSRF cookie handling -->
+    <meta name="referrer" content="same-origin">
     <title>Farmer Registration - Team Shark</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://e7.pngegg.com/pngimages/61/270/png-clipart-cute-shark-shark-animal-thumbnail.png">
@@ -124,5 +127,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript to ensure CSRF token is properly set
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force a fetch to set cookies
+            fetch(window.location.href, {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).then(function() {
+                console.log('CSRF cookie should be set now');
+            });
+        });
+    </script>
 </body>
 </html> 

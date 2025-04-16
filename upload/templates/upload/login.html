@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- CSRF Meta Tags to help with CSRF cookie handling -->
+    <meta name="referrer" content="same-origin">
     <title>Farmer Login - Team Shark</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://e7.pngegg.com/pngimages/61/270/png-clipart-cute-shark-shark-animal-thumbnail.png">
@@ -283,6 +286,13 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            // Force a fetch to set cookies
+            fetch(window.location.href, {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).then(function() {
+                console.log('CSRF cookie should be set now');
+            });
         });
 
         function openImageModal(imageUrl, timeAgo) {
