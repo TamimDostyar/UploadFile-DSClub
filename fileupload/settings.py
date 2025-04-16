@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-sjw=851l3^g(xeojl#7)b2^iprb2l0i_kgxx65#jx*9y%o*1^z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['teamshark.duckdns.org', '20.64.249.66', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'teamshark.onrender.com', '.onrender.com', '20.115.93.164', 'teamshark.duckdns.org']
 
 # Custom user model
 AUTH_USER_MODEL = 'upload.Farmer'
@@ -139,13 +139,13 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # HTTPS settings
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
-SECURE_SSL_REDIRECT = False  # Set to True in production
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True  # Enable for production
+SESSION_COOKIE_SECURE = True  # Enable for production
+CSRF_COOKIE_SECURE = True  # Enable for production
 
 # Add CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = ['http://teamshark.duckdns.org']
+CSRF_TRUSTED_ORIGINS = ['https://teamshark.duckdns.org', 'https://teamshark.onrender.com', 'https://*.onrender.com']
 
 # Ensure CSRF cookies are properly handled
 CSRF_USE_SESSIONS = False  # Store CSRF token in cookie, not session

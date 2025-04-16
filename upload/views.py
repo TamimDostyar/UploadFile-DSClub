@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.conf import settings
 
 # Simple health check endpoint for Render.com to detect
 def health_check(request):
@@ -303,6 +304,7 @@ def logout_view(request):
     request.session.flush()  # Clear the session
     messages.success(request, 'You have been successfully logged out.')
     return redirect('login')
+
 @api_view(['GET'])
 def forecast(request):
     """
@@ -535,3 +537,13 @@ def get_weather_description(code):
         return "Unknown"
     
     return weather_codes.get(code, "Unknown")
+
+# Add a debug view to check if media files can be accessed
+def debug_media(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    
+    if os.path.exists(file_path):
+        content = f"File exists: {file_path}\nSize: {os.path.getsize(file_path)} bytes"
+        return HttpResponse(content, content_type="text/plain")
+    else:
+        return HttpResponse(f"File does not exist: {file_path}", content_type="text/plain", status=404)

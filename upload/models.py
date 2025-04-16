@@ -30,7 +30,18 @@ class UploadedFile(models.Model):
     def save(self, *args, **kwargs):
         if not self.title:
             self.title = os.path.splitext(os.path.basename(self.file.name))[0]
+        
+        # Save the model first
         super().save(*args, **kwargs)
+        
+        # Set file permissions if the file exists
+        if self.file and os.path.exists(self.file.path):
+            try:
+                # Make file readable by all
+                os.chmod(self.file.path, 0o644)
+                print(f"Set permissions on {self.file.path}")
+            except Exception as e:
+                print(f"Error setting permissions: {str(e)}")
     
     def __str__(self):
         return f"File uploaded by {self.farmer.username if self.farmer else 'Unknown'} at {self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S')}"

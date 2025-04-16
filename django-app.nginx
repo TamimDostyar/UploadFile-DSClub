@@ -1,0 +1,56 @@
+server {
+    listen 80;
+    server_name teamshark.duckdns.org;
+    
+    # Redirect all HTTP traffic to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name teamshark.duckdns.org;
+
+    # SSL/TLS certificates
+    ssl_certificate /etc/letsencrypt/live/teamshark.duckdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/teamshark.duckdns.org/privkey.pem;
+    
+    # SSL/TLS settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    
+    location /static/ {
+        root /home/dostah01/UploadFile-DSClub;
+    }
+
+    location /media/ {
+        alias /home/dostah01/UploadFile-DSClub/media/;
+        autoindex off;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
+    location / {
+        # Using proxy_params file OR our own headers, not both
+        # Remove include to avoid duplication
+        # include /etc/nginx/proxy_params;
+        
+        proxy_pass http://127.0.0.1:8000;
+        
+        # Headers for CSRF and proper host forwarding
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        
+        proxy_cookie_path / "/; HTTPOnly; Secure; SameSite=Lax";
+        proxy_cookie_domain localhost teamshark.duckdns.org;
+    }
+} 
