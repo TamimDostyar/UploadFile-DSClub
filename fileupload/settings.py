@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-sjw=851l3^g(xeojl#7)b2^iprb2l0i_kgxx65#jx*9y%o*1^z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'teamshark.onrender.com', '.onrender.com', '20.115.93.164', 'teamshark.duckdns.org']
+ALLOWED_HOSTS = ['teamshark.duckdns.org', '20.64.249.66', 'localhost', '127.0.0.1']
 
 # Custom user model
 AUTH_USER_MODEL = 'upload.Farmer'
